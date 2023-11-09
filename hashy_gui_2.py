@@ -57,7 +57,7 @@ class HashCalculatorApp():
             if var.get():
                 hash_value = self.compute_hash(self.text, algorithm)
                 self.result_labels[algorithm].config(
-                    text=f"{algorithm}: {hash_value}")
+                    text=f"{hash_value}")
 
 # ---------------------------- COMPUTE SPECIFIC HASH ----------------------#
     def compute_hash(self, text, algorithm):

@@ -8,7 +8,7 @@ import java.io.*;
 public class HashyApp {
     private JFrame frame;
     private JPanel panel;
-    private JTextArea inputTextArea;
+    private JTextField inputTextField;
     private JButton calculateButton;
     private JButton saveButton;
     private JComboBox<String> inputSourceComboBox;
@@ -21,18 +21,23 @@ public class HashyApp {
         frame = new JFrame("Hash Generator");
         panel = new JPanel(new BorderLayout());
 
-        // Create a text area for user input
-        inputTextArea = new JTextArea(10, 40);
-        JScrollPane inputScrollPane = new JScrollPane(inputTextArea);
-        panel.add(inputScrollPane, BorderLayout.NORTH);
-
-        // Create a control panel for buttons and input source selection
-        JPanel controlPanel = new JPanel();
-        controlPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        // Create a panel for user input and input source selection
+        JPanel inputPanel = new JPanel(new BorderLayout());
 
         // Create a combo box for selecting input source (User Input or File Input)
         inputSourceComboBox = new JComboBox<>(new String[] { "User Input", "File Input" });
-        controlPanel.add(inputSourceComboBox);
+        inputPanel.add(inputSourceComboBox, BorderLayout.WEST);
+
+        // Create a text field for user input
+        inputTextField = new JTextField();
+        inputPanel.add(inputTextField, BorderLayout.CENTER);
+
+        // Add the input panel to the main panel
+        panel.add(inputPanel, BorderLayout.NORTH);
+
+        // Create a control panel for buttons
+        JPanel controlPanel = new JPanel();
+        controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.Y_AXIS));
 
         // Create a button to calculate hashes
         calculateButton = new JButton("Calculate Hashes");
@@ -43,43 +48,47 @@ public class HashyApp {
         controlPanel.add(saveButton);
 
         // Add the control panel to the main panel
-        panel.add(controlPanel, BorderLayout.CENTER);
+        panel.add(controlPanel, BorderLayout.EAST);
 
         // Create a panel for displaying checkboxes and labels for hashes
         JPanel checkboxPanel = new JPanel();
-        checkboxPanel.setLayout(new GridLayout(0, 2));
+        checkboxPanel.setLayout(new GridLayout(0, 1));
 
         // Create checkboxes for hash algorithms and store labels in a map
         hashCheckboxes = new JCheckBox[] {
-                new JCheckBox("MD5"),
-                new JCheckBox("SHA-1"),
-                new JCheckBox("SHA-224"),
-                new JCheckBox("SHA-256"),
-                new JCheckBox("SHA-384"),
-                new JCheckBox("SHA-512"),
-                new JCheckBox("SHA3-224"),
-                new JCheckBox("SHA3-256"),
-                new JCheckBox("SHA3-384"),
-                new JCheckBox("SHA3-512") };
+                new JCheckBox("MD5", true),
+                new JCheckBox("SHA-1", true),
+                new JCheckBox("SHA-224", true),
+                new JCheckBox("SHA-256", true),
+                new JCheckBox("SHA-384", true),
+                new JCheckBox("SHA-512", true),
+                new JCheckBox("SHA3-224", true),
+                new JCheckBox("SHA3-256", true),
+                new JCheckBox("SHA3-384", true),
+                new JCheckBox("SHA3-512", true) };
 
         hashLabels = new HashMap<>();
 
         // Associate labels with checkboxes
         for (JCheckBox checkbox : hashCheckboxes) {
-            checkboxPanel.add(checkbox);
+            JPanel hashPanel = new JPanel(new BorderLayout());
             JLabel label = new JLabel();
+            label.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12)); // Set monospaced font
+            label.setVerticalAlignment(SwingConstants.TOP); // Wrap text
             hashLabels.put(checkbox.getText(), label);
-            checkboxPanel.add(label);
+            hashPanel.add(checkbox, BorderLayout.WEST);
+            hashPanel.add(label, BorderLayout.CENTER);
+            checkboxPanel.add(hashPanel);
         }
 
         // Add the checkbox panel to the main panel
-        panel.add(checkboxPanel, BorderLayout.SOUTH);
+        panel.add(checkboxPanel, BorderLayout.CENTER);
 
         // Add the main panel to the frame
         frame.add(panel);
 
         // Configure frame properties
-        frame.pack();
+        frame.setSize(1200, 300); // Adjust height based on panel heights
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
 
@@ -102,7 +111,7 @@ public class HashyApp {
                 if (selectedOption.equals("File Input")) {
                     openFile();
                 } else {
-                    inputTextArea.setText("");
+                    inputTextField.setText("");
                 }
             }
         });
@@ -111,7 +120,7 @@ public class HashyApp {
     // Method to generate hashes based on user input
     private void generateHashes() {
         // Retrieve user input
-        String input = inputTextArea.getText();
+        String input = inputTextField.getText();
         if (input.isEmpty()) {
             JOptionPane.showMessageDialog(frame, "Please enter some text for hashing.", "Error",
                     JOptionPane.ERROR_MESSAGE);
@@ -127,12 +136,13 @@ public class HashyApp {
                 String algorithm = checkbox.getText();
                 String hash = calculateHash(input, algorithm);
                 result.append(algorithm).append(": ").append(hash).append("\n");
-                hashLabels.get(algorithm).setText(algorithm + ": " + hash);
+                hashLabels.get(algorithm).setText("<html>" + hash + "</html>"); // Use HTML to format label text
             }
         }
 
         // Store the generated hashes for saving to a file
         generatedHashes = result.toString();
+
     }
 
     // Method to calculate a hash using a specified algorithm
@@ -197,7 +207,7 @@ public class HashyApp {
                 while (scanner.hasNextLine()) {
                     fileContent.append(scanner.nextLine()).append("\n");
                 }
-                inputTextArea.setText(fileContent.toString());
+                inputTextField.setText(fileContent.toString());
             } catch (FileNotFoundException e) {
                 JOptionPane.showMessageDialog(frame, "Error reading the selected file.", "Error",
                         JOptionPane.ERROR_MESSAGE);

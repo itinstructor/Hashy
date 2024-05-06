@@ -9,6 +9,9 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import filedialog
 import hashlib
+from base64 import b64decode
+from encryption_icon import small_icon_data
+from encryption_icon import large_icon_data
 
 
 class HashCalculatorApp():
@@ -18,6 +21,10 @@ class HashCalculatorApp():
         # Set the title of the window
         self.root.title("Hashy Hash Calculator")
         self.root.geometry("950x650+100+50")
+        # self.root.iconbitmap("./encryption.ico")
+        small_icon = tk.PhotoImage(data=b64decode(small_icon_data))
+        large_icon = tk.PhotoImage(data=b64decode(large_icon_data))
+        self.root.iconphoto(False, large_icon, small_icon)
 
         # Initialize a variable to store the input text
         self.text = ""

@@ -1,0 +1,279 @@
+#!/usr/bin/env python3
+"""
+    Name: hashy_gui.py
+    Author: 
+    Created: 10/01/2023
+    Purpose: 
+"""
+import tkinter as tk
+import tkinter.ttk as ttk
+from tkinter import filedialog
+import hashlib
+from base64 import b64decode
+from encryption_icon import small_icon_data
+from encryption_icon import large_icon_data
+
+
+class HashCalculatorApp():
+    def __init__(self) -> None:
+        # Initialize the main application window
+        self.root = tk.Tk()
+
+        # Expand window to fit
+        self.root.grid_rowconfigure(0, weight=1) 
+        self.root.grid_columnconfigure(0, weight=1)
+        
+        # Set the title of the window
+        self.root.title("Hashy Hash Calculator")
+        self.root.geometry("950x650+100+50")
+
+        # The WM_DELETE_WINDOW protocol is used to handle what happens
+        # when the user clicks the close button of a window.
+        self.root.protocol("WM_DELETE_WINDOW", self.quit)
+        
+        # Set the window and taskbar icon
+        small_icon = tk.PhotoImage(data=b64decode(small_icon_data))
+        large_icon = tk.PhotoImage(data=b64decode(large_icon_data))
+        self.root.iconphoto(False, large_icon, small_icon)
+
+        # Initialize a variable to store the input text
+        self.text = ""
+        self.create_frames()
+        self.create_widgets()
+        self.root.mainloop()
+
+# ---------------------------- COMPUTE HASHES ---------------------------- #
+    def compute_hashes(self, *args):
+        """Compute all hashes"""
+        # Get the selected text source (User Entry or From File)
+        text_source = self.text_source_combo.get()
+
+        # Depending on the selected source, retrieve the input text
+        if text_source == "User Entry":
+            self.text = self.txt_input.get(1.0, tk.END)
+        elif text_source == "From File":
+            file_path = self.entry_file_path.get()
+            try:
+                # Attempt to open and read text from the specified file
+                with open(file_path, 'r') as file:
+                    self.text = file.read()
+            except FileNotFoundError:
+                # Display an error message if the file is not found
+                self.result_label.config(text="File not found.")
+                return
+        else:
+            # Display an error message if an invalid text source is selected
+            self.result_label.config(text="Invalid text source.")
+            return
+
+        # Clear previous results
+        self.result_label.config(text="")
+
+        # Loop through selected hash algorithms and calculate their hashes
+        for algorithm, var in self.checkboxes.items():
+            if var.get():
+                hash_value = self.compute_hash(self.text, algorithm)
+                self.result_labels[algorithm].config(
+                    text=f"{hash_value}")
+
+# ---------------------------- COMPUTE SPECIFIC HASH --------------------- #
+    def compute_hash(self, text, algorithm):
+        """Use the hashlib library to compute the hash
+         based on the selected algorithm"""
+        if algorithm == "MD5":
+            return hashlib.md5(text.encode()).hexdigest()
+        elif algorithm == "SHA1":
+            return hashlib.sha1(text.encode()).hexdigest()
+        elif algorithm == "SHA224":
+            return hashlib.sha224(text.encode()).hexdigest()
+        elif algorithm == "SHA256":
+            return hashlib.sha256(text.encode()).hexdigest()
+        elif algorithm == "SHA384":
+            return hashlib.sha384(text.encode()).hexdigest()
+        elif algorithm == "SHA512":
+            return hashlib.sha512(text.encode()).hexdigest()
+        elif algorithm == "SHA3_224":
+            return hashlib.sha3_224(text.encode()).hexdigest()
+        elif algorithm == "SHA3_256":
+            return hashlib.sha3_256(text.encode()).hexdigest()
+        elif algorithm == "SHA3_384":
+            return hashlib.sha3_384(text.encode()).hexdigest()
+        elif algorithm == "SHA3_512":
+            return hashlib.sha3_512(text.encode()).hexdigest()
+        elif algorithm == "Blake2b":
+            return hashlib.blake2b(text.encode()).hexdigest()
+        elif algorithm == "Blake2s":
+            return hashlib.blake2s(text.encode()).hexdigest()
+        # elif algorithm == "Shake_128":
+        #     return hashlib.shake_128(text.encode()).hexdigest()
+        # elif algorithm == "Shake_256":
+        #     return hashlib.shake_256(text.encode()).hexdigest()
+        # elif algorithm == "Whirlpool":
+        #     return hashlib.new('whirlpool', text.encode()).hexdigest()
+        # elif algorithm == "RIPEMD-256":
+        #     return hashlib.new('ripemd256', text.encode()).hexdigest()
+
+# ---------------------------- SAVE HASHES ------------------------------- #
+    def save_hashes(self):
+        """Save hashes to a file"""
+        # Prompt the user to choose a file path for saving the hashes
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".txt", filetypes=[("Text files", "*.txt")])
+        if not file_path:
+            return  # If the user cancels the file dialog, do nothing
+
+        # Write the calculated hashes to the chosen file
+        with open(file_path, 'w') as file:
+            for algorithm, var in self.checkboxes.items():
+                if var.get():
+                    hash_value = self.compute_hash(self.text, algorithm)
+                    file.write(f"{algorithm}: {hash_value}\n")
+
+        # Display a message indicating that the hashes have been saved
+        self.result_label.config(text="Hashes saved to file.")
+
+# ---------------------------- OPEN TEXT FILE ---------------------------- #
+    def open_text_file(self):
+        """Open a text file for hashing"""
+        # Prompt the user to choose a text file to open
+        file_path = filedialog.askopenfilename(
+            filetypes=[("Text files", "*.txt")])
+        if file_path:
+            # Update the file path entry field with the chosen file path
+            self.entry_file_path.delete(0, tk.END)
+            self.entry_file_path.insert(0, file_path)
+
+# ---------------------------- CREATE FRAMES ----------------------------- #
+    def create_frames(self):
+        """Create frames"""
+        self.entry_frame = tk.LabelFrame(
+            self.root, text="Entry",
+            relief=tk.GROOVE)
+        self.hash_frame = tk.LabelFrame(
+            self.root, text="Hashes", relief=tk.GROOVE)
+        self.command_frame = tk.LabelFrame(
+            self.root, text="Commands", relief=tk.GROOVE)
+
+        self.entry_frame.grid(row=0, column=0, sticky="w")
+        self.command_frame.grid(row=1, column=0, sticky="w")
+        self.hash_frame.grid(row=2, column=0, sticky="nsew")
+
+        # Set padding between frames and the window
+        self.entry_frame.grid_configure(padx=10, pady=(10, 0))
+        self.command_frame.grid_configure(padx=10, pady=(10, 10))
+        self.hash_frame.grid_configure(padx=10, pady=(0, 10))
+
+# ---------------------------- CREATE WIDGETS ---------------------------- #
+    def create_widgets(self):
+        """Create widgets"""
+        # Create and pack a combo box for selecting
+        # the text source (User Entry or From File)
+        self.lbl_text_source = ttk.Label(
+            self.entry_frame, text="Text Source:")
+        self.lbl_text_source.grid(row=0, column=0, sticky="w")
+        self.text_source_combo = ttk.Combobox(
+            self.entry_frame,
+            state=("readonly"),
+            values=["User Entry", "From File"]
+        )
+        # Set the default selection
+        self.text_source_combo.set("User Entry")
+        self.text_source_combo.grid(row=0, column=1, sticky="w")
+
+        # Create and pack an input label and entry for entering text
+        self.lbl_input = ttk.Label(self.entry_frame, text="Enter Text:")
+        self.lbl_input.grid(row=1, column=0, sticky="w")
+        self.txt_input = tk.Text(self.entry_frame, width=44, height=4)
+        self.txt_input.focus_set()
+        self.txt_input.grid(row=1, column=1, sticky="w")
+
+        # Create and pack an entry for specifying a file path
+        self.lbl_file_path = ttk.Label(self.entry_frame, text="File Path:")
+        self.lbl_file_path.grid(row=2, column=0, sticky="w")
+        self.entry_file_path = ttk.Entry(self.entry_frame)
+        self.entry_file_path.grid(row=2, column=1, sticky="w")
+
+        # Create and pack a button for opening a text file
+        self.btn_open_file = ttk.Button(
+            self.entry_frame,
+            text="Open Text File", command=self.open_text_file)
+        self.btn_open_file.grid(row=2, column=1)
+
+        # Create dictionaries to store checkboxes
+        # and result labels for various hash algorithms
+        self.checkboxes = {}
+        self.result_labels = {}
+        # Start the grid from row 3
+        row_index = 3
+
+        # Create checkboxes for hash algorithms and associated result labels
+        for algorithm in sorted(
+            ["MD5", "SHA1", "SHA224", "SHA256", "SHA384", "SHA512",
+             "SHA3_224", "SHA3_256", "SHA3_384", "SHA3_512",
+             "Blake2b", "Blake2s"]):
+            # Create a variable to track the checkbox state
+            self.checkboxes[algorithm] = tk.IntVar()
+            # Create a checkbox widget with the text of the algorithm
+            checkbox = tk.Checkbutton(
+                self.hash_frame,
+                text=algorithm,
+                variable=self.checkboxes[algorithm]
+            )
+            checkbox.select()
+            # Place the checkbox on the grid at the specified row and column
+            checkbox.grid(row=row_index, column=0, sticky="w")
+            # Create labels for displaying results and place them on the grid
+            self.result_labels[algorithm] = tk.Label(
+                self.hash_frame, text="", justify="left")
+            self.result_labels[algorithm].grid(
+                row=row_index, column=1, sticky="w")
+            row_index += 1
+
+        # Create a label for displaying hash calculation results
+        # and place it on the grid
+        self.result_label = ttk.Label(
+            self.command_frame, text="", wraplength=300, justify="left")
+        self.result_label.grid(row=0, column=2)
+
+        # Create a button for computing hashes and place it on the grid
+        self.compute_button = ttk.Button(
+            self.command_frame,
+            text="Compute Hashes", command=self.compute_hashes
+        )
+        self.compute_button.grid(row=0, column=0)
+
+        # Create button for saving hashes to a file
+        self.save_button = ttk.Button(
+            self.command_frame,
+            text="Save Hashes to File",
+            command=self.save_hashes
+        )
+        self.save_button.grid(row=0, column=1)
+
+        # Create button for saving hashes to a file
+        self.quit_button = ttk.Button(
+            self.command_frame,
+            text="Quit",
+            command=self.quit
+        )
+        self.quit_button.grid(row=0, column=2)
+
+        # Set padding for all widgets inside each frame
+        # set ipad padding inside the widgets
+        for widget in self.entry_frame.winfo_children():
+            widget.grid_configure(padx=5, pady=5, ipadx=2, ipady=2)
+        for widget in self.command_frame.winfo_children():
+            widget.grid_configure(padx=5, pady=5, ipadx=2, ipady=2)
+        for widget in self.hash_frame.winfo_children():
+            widget.grid_configure(padx=1, pady=1, ipadx=1, ipady=1)
+
+        # The enter key will activate the calculate method
+        self.root.bind('<Return>', self.compute_hashes)
+        self.root.bind("<KP_Enter>", self.compute_hashes)
+        self.root.bind("<Escape>", self.quit)
+
+    def quit(self, *args):
+        self.root.destroy()
+
+
+hashy = HashCalculatorApp()

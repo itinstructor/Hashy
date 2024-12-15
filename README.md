@@ -2,7 +2,7 @@
 
 Python Tkinter Hash generation program
 
-### Hashy
+## Hashy
 
 - (10/02/2023) **hashy_gui.py** is a Python Tkinter program that takes user input or a text file, then displays several hash algorhythm results.
 
@@ -13,11 +13,14 @@ Python Tkinter Hash generation program
 ![Hashy GUI](./img/hashy_gui.png)
 </p>
 
-### About Me
+### Purpose
 
 I am an Information Technology Instructor at [Western Nebraska Community College](https://www.wncc.edu). I teach Information Technology, CyberSecurity and Computer Science. Best job ever!
 
-Visit our Facebook page: [Facebook WNCC IT Program](https://www.facebook.com/wnccitprogram/)
+This is a collection of PyGame tutorials for my Computer Science classes at Western Nebraska Community College.
+
+- Facebook: [Facebook WNCC IT Program](https://www.facebook.com/wnccitprogram/)
+- YouTube: [YouTube WINCC IT Program](https://www.youtube.com/@williamloringitinstructor)
 
 ### License
 
